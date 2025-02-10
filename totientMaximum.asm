@@ -15,12 +15,12 @@ main:
   call primefac 
 
   push rcx
-  sub rsp, 8
+  sub rsp, 24
 
   ; collect totient of rcx in rax 
   call totient
 
-  add rsp, 8
+  add rsp, 24
   pop rcx
 
   ; store the ratio in xmm0 
@@ -28,66 +28,89 @@ main:
   cvtsi2sd xmm1, rax
   divsd xmm0, xmm1 
   
-  sub rsp, 24
-  movsd [rsp], xmm0
-
+  sub rsp, 16
+  movsd [rsp + 8], xmm0
+  ; Index print
   lea rdi, [index]
   mov rsi, rcx 
   xor rax, rax 
   call printf 
 
-  movsd xmm0, [rsp]
-  add rsp, 24
+  ; Max Ratio print
+  movsd xmm0, [rsp + 8]
 
   lea rdi, [max]
-  xor rax, rax 
+  mov al, 1 
   call printf
+  add rsp, 16
 
+  ; sysexit
   mov rax, 60
   xor rdi, rdi 
   syscall
 
 ; value passed in rcx
 ; n passed back in rax 
-totient: 
+totient:
+  push rbp 
+  mov rbp, rsp
+  push rbx 
+
+  mov rbx, rcx
 
   cmp rcx, 0
   jle .base 
 
   mov r8, 1
-  mov r9, rcx 
   xor rcx, rcx 
 
   .loop: 
+    
+    cmp r8, rbx 
+    jge .res 
+  
+    ; reset copy value to full value for each while loop
+    mov r9, rbx
     mov r10, r8
     
-    .while:
-      
-      mov r11, r9 
-      mov rax, r10 
-      idiv r11 
-      mov r10, r11 
-      
-      cmp rdx, 1
-      je .count 
+  .while:
+     
+    test r9, r9 
+    jz .test
 
-      test rdx, rdx 
-      jnz .while 
-
-    .count:
+    mov r11, r9               ; tmp = copy
+    mov rax, r10              ; rax holds div
+    xor rdx, rdx 
+    div r9                    ; rdx hold rem
     
-      inc rcx
+    mov r9, rdx               ; copy = div % copy
+    mov r10, r11              ; div = tmp
+
+    jmp .while
+
+  .test:
+
+    cmp r10, 1
+    jne .next 
+    inc rcx                   ; if div == 1 count++
+
+  .next: 
 
     inc r8
-    cmp r8, r9
-    je .res
+    jmp .loop
 
   .res:
     mov rax, rcx
+    mov rsp, rbp
+    pop rbx
+    pop rbp
     ret
 
   .base: 
-    xor rcx, rcx 
+    xor rax, rax              ; input value is <= 0 
+    mov rsp, rbp 
+    pop rbx
+    pop rbp
     ret 
 
 ; takes in count through rax and returns prime factorial in rcx 
@@ -98,11 +121,14 @@ primefac:
 
 .loop: 
 
+    inc r8
+
     push rcx 
     push rax
 
-    inc r8
     call next_prime
+    
+    mov r8, rax
 
     pop rax 
     pop rcx 
@@ -118,14 +144,19 @@ primefac:
 .res:
     ; return the prime factorial in rcx 
     ret
-  
 
 next_prime:
 
   .loop:
 
     mov rcx, r8
+    push r8
+    sub rsp, 8
+
     call check_prime 
+    
+    add rsp, 8
+    pop r8
 
     cmp rax, 1 
     je .prime 
@@ -134,7 +165,7 @@ next_prime:
     jmp .loop
 
   .prime: 
-
+    mov rax, r8
     ret                     ; next prime value store in r8
 
 check_prime:
