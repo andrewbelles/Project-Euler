@@ -4,7 +4,7 @@ CCU = nvcc
 ASM = nasm
 
 # Compiler flags
-CFLAGS    = -std=c99 -lm
+CFLAGS    = -std=c99
 CUFLAGS   = -std=c++11
 ASMFLAGS  = -f elf64
 
@@ -37,7 +37,7 @@ $(EXEC_DIR):
 
 # Compilation rules
 $(EXEC_DIR)/%: $(C_DIR)/%.c | $(EXEC_DIR)
-	$(CC) $(CFLAGS) -o $@ $<
+	$(CC) $(CFLAGS) -o $@ $< -lm
 
 $(EXEC_DIR)/%: $(ASM_DIR)/%.asm | $(EXEC_DIR)
 	$(ASM) $(ASMFLAGS) $< -o $(@).o
