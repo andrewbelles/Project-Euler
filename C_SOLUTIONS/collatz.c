@@ -46,6 +46,7 @@ int main(void) {
   }
 
   printf("Maximum Chain on interval 0 -> %ld is %ld starting from %ld\n", n, max, start);
-  
+  free(cache);
+
   return 0;
 }

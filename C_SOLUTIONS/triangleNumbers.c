@@ -55,5 +55,8 @@ int main(void) {
 
   printf("Number of Triangle Words in file: %d\n", count);
 
+  free(cache);
+  fclose(fptr);
+
   return 0;
 }

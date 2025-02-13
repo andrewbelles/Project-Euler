@@ -1,0 +1,102 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define SIZE 1000000
+
+typedef struct Digits {
+  int data[31];
+  int count;
+} Digits;
+  
+typedef struct Node {
+  int value;
+  struct Node *next;
+} Node;
+
+typedef struct Chain {
+  int smallest;
+  int count;
+} Chain;
+
+
+// Return set of unique factors
+static Digits factorize(int n) {
+  Digits result;
+  int i = 0, dig_ct = 0;
+
+  result.data[0] = 1;
+  result.count++;
+  
+  while (i * i <= n) {
+    i++;
+    if (n % i != 0) continue;
+    result.data[dig_ct++] = i; // If i divides n then it can be placed in data
+  }
+
+  return result;
+}
+
+
+// Returns smallest member and size of chain in struct 
+static Chain amicableChain(Chain chain_cache[SIZE], int n) {
+  Chain chain;
+  Digits digits;
+  int value_cache[2048];
+
+  int value;
+
+  while (1) {
+
+    if (n > SIZE) return (Chain){
+      .smallest = 0,
+      .count    = 0
+    };
+
+    // Check for cache hit on current n and append values to chain struct 
+    if (chain_cache[n].smallest != 0) {
+      if (chain.smallest > chain_cache[n].smallest) {
+        chain.smallest = chain_cache[n].smallest;
+      } 
+
+      chain.count += chain_cache[n].count;
+      return chain;
+    }
+
+    digits = factorize(value);  
+    value = 0;
+    for (int i = 0; i < digits.count; i++) {
+      value += digits.data[i]; 
+    }
+
+    for (int i = 0; i < chain.count; i++) {
+      if (value_cache[i] == value) return chain;
+
+    }
+
+    value_cache[chain.count] = value;
+
+    n = value;
+    chain.count++;
+    if (chain.smallest > value) chain.smallest = value; 
+  }
+
+  return chain;
+}
+
+
+int main(void) {
+  int n = 1e6;
+  Chain *cache = (Chain *)malloc(SIZE * sizeof(Chain));
+  for (int i = 0; i < n; i++) {
+    cache[i].smallest = 0;
+  }   // init 
+
+  for (int i = 0; i < n; i++) {
+    
+  }
+
+
+  printf("");
+
+  return 0;
+}
