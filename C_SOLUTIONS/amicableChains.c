@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define SIZE 1000000
 
@@ -42,19 +43,16 @@ static Factor factorize(int n) {
 // Returns smallest member and size of chain in struct 
 static Chain amicableChain(Chain chain_cache[SIZE], int n) {
   Chain chain = {
-    .smallest = 0,
+    .smallest = n,
     .count    = 0
   };
 
-  Factor factors;
-  int value_cache[256] = {0};
-  int value = 0;
+  int init = n;
+  Factor factors, prevfac;
+  int value = 0, preval = 0;
 
   // While true loop bad I know 
   while (1) {
-    // Assume length won't be this large 
-    if (chain.count >= 256) break;
-
     // return empty struct for n exceeding limit 
     if (n >= SIZE) return (Chain){
       .smallest = 0,
@@ -92,25 +90,41 @@ static Chain amicableChain(Chain chain_cache[SIZE], int n) {
     if (chain.count == 0) chain.smallest = value;
 
     // Check for repeat values
-    for (int i = 0; i < chain.count; i++) {
-      if (value_cache[i] == value) return chain;
-      // Preferred path to be taken 
-    }
+    if (value == init) {
+      
+      prevfac = factorize(preval);
+      preval = 0;
+      for (int i = 0; i < prevfac.count; i++) {
+        preval += prevfac.data[i]; 
+      }
 
-    // Add value to local cache 
-    value_cache[chain.count] = value;
+      if (preval == n) {
+        chain_cache[init] = chain;
+        return chain;
+      } else {
+        return (Chain){
+          .smallest = 0,
+          .count    = 0
+        };
+      }
+    } 
 
     // Iterate and check for new min
+    preval = n;
     n = value;
     chain.count++;
     if (chain.smallest > value) chain.smallest = value;
   }
+  
+  chain_cache[init] = chain;
+
   return chain;
 }
 
 int main(void) {
   // We want this on the heap to avoid 8mb on stack 
   Chain *cache = (Chain *)malloc(SIZE * sizeof(Chain));
+  memset(cache, 0, SIZE * sizeof(Chain));
   Chain result, best = {
     .smallest = 0,
     .count    = 0
@@ -120,7 +134,11 @@ int main(void) {
   for (int i = 1; i <= SIZE; i++) {
     result = amicableChain(cache, i); 
     // printf("I: %d\n  Small: %d\n  Count %d\n", i, result.smallest, result.count);
-    if (best.count < result.count) best = result; 
+    if (best.count < result.count) {
+      best = result;
+      printf("Updated\n");
+      printf("  S: %d\n  L: %d\n", best.smallest, best.count);
+    }
   }
 
   printf("Smallest value %d in the largest chain length %d.\n", best.smallest, best.count);

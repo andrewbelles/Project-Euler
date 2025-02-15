@@ -5,7 +5,7 @@ ASM = nasm
 
 # Compiler flags
 CFLAGS    = -std=c99
-CUFLAGS   = -std=c++11
+CUFLAGS   = -std=c++20 -arch=sm_86 --expt-relaxed-constexpr
 ASMFLAGS  = -f elf64
 
 # Directories
